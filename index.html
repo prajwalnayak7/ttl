@@ -3,9 +3,461 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My GitHub Page</title>
+    <title>Your Life Journey</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #444;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        input[type="date"], select {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        input[type="date"]:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+        }
+        .slider-container {
+            margin-top: 20px;
+        }
+        .slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        #lifeExpectancyValue {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #555;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            font-size: 18px;
+            display: none;
+        }
+        #countryDisplay {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+            font-size: 16px;
+            display: none;
+        }
+        .or-divider {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #888;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .or-divider::before, .or-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+        .or-divider::before {
+            margin-right: 10px;
+        }
+        .or-divider::after {
+            margin-left: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to My GitHub Page!</h1>
+
+<div class="container">
+    <div id="countryDisplay">Let's figure it out together!</div>
+    <h1>Curious about Your Life Journey?</h1>
+    <input type="date" id="dob" placeholder="When were you born?" required>
+
+    <select id="countrySelect">
+        <option value="">Select your country</option>
+    </select>
+
+    <div class="or-divider">OR</div>
+
+    <div class="slider-container">
+        <label for="lifeExpectancySlider">Till what age do you expect to live?</label>
+        <input type="range" id="lifeExpectancySlider" class="slider" min="30" max="120" value="75" step="1" oninput="updateLifeExpectancyValue()">
+        <div id="lifeExpectancyValue">75 years</div>
+    </div>
+    
+    <button onclick="calculateLifeStats()">Show me the numbers!</button>
+
+    <div id="errorMessage" class="error"></div>
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+const lifeExpectancyData = {
+    "USA": { expectancy: 78.54, flag: "🇺🇸" },
+    "Canada": { expectancy: 82.43, flag: "🇨🇦" },
+    "UK": { expectancy: 81.77, flag: "🇬🇧" },
+    "Australia": { expectancy: 83.17, flag: "🇦🇺" },
+    "India": { expectancy: 69.66, flag: "🇮🇳" },
+    "Germany": { expectancy: 81.3, flag: "🇩🇪" },
+    "France": { expectancy: 82.27, flag: "🇫🇷" },
+    "Japan": { expectancy: 84.63, flag: "🇯🇵" },
+    "Brazil": { expectancy: 75.88, flag: "🇧🇷" },
+    "South Africa": { expectancy: 64.13, flag: "🇿🇦" },
+    "China": { expectancy: 77.28, flag: "🇨🇳" },
+    "Russia": { expectancy: 71.37, flag: "🇷🇺" },
+    "Italy": { expectancy: 83.05, flag: "🇮🇹" },
+    "Spain": { expectancy: 83.55, flag: "🇪🇸" },
+    "Mexico": { expectancy: 75.66, flag: "🇲🇽" },
+    "South Korea": { expectancy: 83.16, flag: "🇰🇷" },
+    "Turkey": { expectancy: 76.98, flag: "🇹🇷" },
+    "Saudi Arabia": { expectancy: 75.98, flag: "🇸🇦" },
+    "Argentina": { expectancy: 76.64, flag: "🇦🇷" },
+    "Colombia": { expectancy: 76.15, flag: "🇨🇴" },
+    "Indonesia": { expectancy: 71.56, flag: "🇲🇨" },
+    "Thailand": { expectancy: 77.04, flag: "🇹🇭" },
+    "Malaysia": { expectancy: 77.59, flag: "🇲🇾" },
+    "Philippines": { expectancy: 71.68, flag: "🇵🇭" },
+    "Vietnam": { expectancy: 75.54, flag: "🇻🇳" },
+    "Egypt": { expectancy: 72.71, flag: "🇪🇬" },
+    "Nigeria": { expectancy: 60.54, flag: "🇳🇬" },
+    "Kenya": { expectancy: 66.29, flag: "🇰🇪" },
+    "Greece": { expectancy: 82.59, flag: "🇬🇷" },
+    "Portugal": { expectancy: 82.02, flag: "🇵🇹" },
+    "Sweden": { expectancy: 82.76, flag: "🇸🇪" },
+    "Norway": { expectancy: 82.69, flag: "🇳🇴" },
+    "Denmark": { expectancy: 81.93, flag: "🇩🇰" },
+    "Finland": { expectancy: 82.43, flag: "🇫🇮" },
+    "Afghanistan": { expectancy: 60.22, flag: "🇦🇫" },
+    "Albania": { expectancy: 78.9, flag: "🇦🇱" },
+    "Algeria": { expectancy: 76.12, flag: "🇩🇿" },
+    "Andorra": { expectancy: 84.23, flag: "🇦🇩" },
+    "Angola": { expectancy: 63.74, flag: "🇦🇴" },
+    "Antigua and Barbuda": { expectancy: 77.4, flag: "🇦🇬" },
+    "Argentina": { expectancy: 76.64, flag: "🇦🇷" },
+    "Armenia": { expectancy: 73.15, flag: "🇦🇲" },
+    "Austria": { expectancy: 81.56, flag: "🇦🇹" },
+    "Azerbaijan": { expectancy: 73.91, flag: "🇦🇿" },
+    "Bahamas": { expectancy: 74.74, flag: "🇧🇸" },
+    "Bahrain": { expectancy: 77.92, flag: "🇧🇭" },
+    "Bangladesh": { expectancy: 73.18, flag: "🇧🇩" },
+    "Barbados": { expectancy: 77.85, flag: "🇧🇧" },
+    "Belarus": { expectancy: 74.73, flag: "🇧🇾" },
+    "Belgium": { expectancy: 81.46, flag: "🇧🇪" },
+    "Belize": { expectancy: 73.1, flag: "🇧🇿" },
+    "Benin": { expectancy: 64.32, flag: "🇧🇯" },
+    "Bhutan": { expectancy: 72.34, flag: "🇧🇹" },
+    "Bolivia": { expectancy: 71.84, flag: "🇧🇴" },
+    "Bosnia and Herzegovina": { expectancy: 77.23, flag: "🇧🇦" },
+    "Botswana": { expectancy: 68.6, flag: "🇧🇼" },
+    "Brazil": { expectancy: 75.88, flag: "🇧🇷" },
+    "Brunei": { expectancy: 77.12, flag: "🇧🇳" },
+    "Bulgaria": { expectancy: 77.8, flag: "🇧🇬" },
+    "Burkina Faso": { expectancy: 62.21, flag: "🇧🇫" },
+    "Burundi": { expectancy: 61.24, flag: "🇧🇮" },
+    "Cabo Verde": { expectancy: 75.41, flag: "🇨🇻" },
+    "Cambodia": { expectancy: 74.56, flag: "🇰🇭" },
+    "Cameroon": { expectancy: 62.66, flag: "🇨🇲" },
+    "Central African Republic": { expectancy: 53.86, flag: "🇨🇫" },
+    "Chad": { expectancy: 54.51, flag: "🇹🇩" },
+    "Chile": { expectancy: 80.58, flag: "🇨🇱" },
+    "China": { expectancy: 77.28, flag: "🇨🇳" },
+    "Colombia": { expectancy: 76.15, flag: "🇨🇴" },
+    "Comoros": { expectancy: 63.21, flag: "🇰🇲" },
+    "Congo": { expectancy: 60.92, flag: "🇨🇬" },
+    "Costa Rica": { expectancy: 81.27, flag: "🇨🇷" },
+    "Croatia": { expectancy: 78.32, flag: "🇭🇷" },
+    "Cuba": { expectancy: 79.9, flag: "🇨🇺" },
+    "Cyprus": { expectancy: 82.11, flag: "🇨🇾" },
+    "Czech Republic": { expectancy: 79.5, flag: "🇨🇿" },
+    "Denmark": { expectancy: 81.93, flag: "🇩🇰" },
+    "Djibouti": { expectancy: 63.76, flag: "🇩🇯" },
+    "Dominica": { expectancy: 77.7, flag: "🇩🇲" },
+    "Dominican Republic": { expectancy: 74.57, flag: "🇩🇴" },
+    "Ecuador": { expectancy: 77.98, flag: "🇪🇨" },
+    "Egypt": { expectancy: 72.71, flag: "🇪🇬" },
+    "El Salvador": { expectancy: 74.43, flag: "🇸🇻" },
+    "Equatorial Guinea": { expectancy: 58.5, flag: "🇬🇶" },
+    "Eritrea": { expectancy: 66.1, flag: "🇪🇷" },
+    "Estonia": { expectancy: 80.22, flag: "🇪🇪" },
+    "Eswatini": { expectancy: 60.2, flag: "🇸🇿" },
+    "Ethiopia": { expectancy: 68.35, flag: "🇪🇹" },
+    "Fiji": { expectancy: 69.58, flag: "🇫🇯" },
+    "Finland": { expectancy: 82.43, flag: "🇫🇮" },
+    "France": { expectancy: 82.27, flag: "🇫🇷" },
+    "Gabon": { expectancy: 64.89, flag: "🇬🇦" },
+    "Gambia": { expectancy: 60.72, flag: "🇲🇲" },
+    "Georgia": { expectancy: 74.54, flag: "🇬🇪" },
+    "Germany": { expectancy: 81.3, flag: "🇩🇪" },
+    "Ghana": { expectancy: 64.87, flag: "🇬🇭" },
+    "Greece": { expectancy: 82.59, flag: "🇬🇷" },
+    "Grenada": { expectancy: 76.1, flag: "🇲🇸" },
+    "Guatemala": { expectancy: 73.05, flag: "🇲🇽" },
+    "Guinea": { expectancy: 62.98, flag: "🇬🇳" },
+    "Guinea-Bissau": { expectancy: 58.47, flag: "🇬🇼" },
+    "Guyana": { expectancy: 69.82, flag: "🇬🇾" },
+    "Haiti": { expectancy: 64.3, flag: "🇭🇹" },
+    "Honduras": { expectancy: 74.48, flag: "🇭🇳" },
+    "Hungary": { expectancy: 76.49, flag: "🇭🇺" },
+    "Iceland": { expectancy: 83.37, flag: "🇮🇸" },
+    "India": { expectancy: 69.66, flag: "🇮🇳" },
+    "Indonesia": { expectancy: 71.56, flag: "🇲🇨" },
+    "Iran": { expectancy: 76.63, flag: "🇮🇷" },
+    "Iraq": { expectancy: 71.89, flag: "🇮🇶" },
+    "Ireland": { expectancy: 82.1, flag: "🇮🇪" },
+    "Israel": { expectancy: 83.51, flag: "🇮🇱" },
+    "Italy": { expectancy: 83.05, flag: "🇮🇹" },
+    "Jamaica": { expectancy: 76.67, flag: "🇯🇲" },
+    "Japan": { expectancy: 84.63, flag: "🇯🇵" },
+    "Jordan": { expectancy: 74.92, flag: "🇯🇴" },
+    "Kazakhstan": { expectancy: 73.53, flag: "🇰🇿" },
+    "Kenya": { expectancy: 66.29, flag: "🇰🇪" },
+    "Kiribati": { expectancy: 65.38, flag: "🇰🇮" },
+    "Kuwait": { expectancy: 75.53, flag: "🇰🇼" },
+    "Kyrgyzstan": { expectancy: 73.32, flag: "🇰🇬" },
+    "Laos": { expectancy: 66.41, flag: "🇱🇦" },
+    "Latvia": { expectancy: 79.39, flag: "🇱🇻" },
+    "Lebanon": { expectancy: 77.77, flag: "🇱🇧" },
+    "Lesotho": { expectancy: 52.55, flag: "🇱🇸" },
+    "Liberia": { expectancy: 64.1, flag: "🇱🇸" },
+    "Libya": { expectancy: 71.47, flag: "🇱🇾" },
+    "Liechtenstein": { expectancy: 82.77, flag: "🇱🇮" },
+    "Lithuania": { expectancy: 79.28, flag: "🇱🇹" },
+    "Luxembourg": { expectancy: 82.3, flag: "🇱🇺" },
+    "Madagascar": { expectancy: 66.19, flag: "🇲🇬" },
+    "Malawi": { expectancy: 63.61, flag: "🇲🇼" },
+    "Malaysia": { expectancy: 77.59, flag: "🇲🇾" },
+    "Maldives": { expectancy: 79.62, flag: "🇲🇻" },
+    "Mali": { expectancy: 60.5, flag: "🇲🇱" },
+    "Malta": { expectancy: 82.4, flag: "🇲🇹" },
+    "Marshall Islands": { expectancy: 73.07, flag: "🇲🇭" },
+    "Mauritania": { expectancy: 64.4, flag: "🇲🇷" },
+    "Mauritius": { expectancy: 73.88, flag: "🇲🇺" },
+    "Mexico": { expectancy: 75.66, flag: "🇲🇽" },
+    "Micronesia": { expectancy: 71.09, flag: "🇲🇵" },
+    "Moldova": { expectancy: 70.69, flag: "🇲🇩" },
+    "Monaco": { expectancy: 85.86, flag: "🇲🇨" },
+    "Mongolia": { expectancy: 71.71, flag: "🇲🇳" },
+    "Montenegro": { expectancy: 77.48, flag: "🇲🇪" },
+    "Morocco": { expectancy: 73.71, flag: "🇲🇦" },
+    "Mozambique": { expectancy: 61.23, flag: "🇲🇿" },
+    "Myanmar": { expectancy: 67.31, flag: "🇲🇲" },
+    "Namibia": { expectancy: 64.02, flag: "🇳🇦" },
+    "Nauru": { expectancy: 62.83, flag: "🇳🇷" },
+    "Nepal": { expectancy: 71.84, flag: "🇳🇵" },
+    "Netherlands": { expectancy: 82.54, flag: "🇳🇱" },
+    "New Zealand": { expectancy: 82.94, flag: "🇳🇿" },
+    "Nicaragua": { expectancy: 75.68, flag: "🇳🇮" },
+    "Niger": { expectancy: 60.29, flag: "🇳🇪" },
+    "Nigeria": { expectancy: 60.54, flag: "🇳🇬" },
+    "North Macedonia": { expectancy: 77.5, flag: "🇲🇰" },
+    "Norway": { expectancy: 82.69, flag: "🇳🇴" },
+    "Oman": { expectancy: 76.07, flag: "🇴🇲" },
+    "Pakistan": { expectancy: 66.34, flag: "🇵🇰" },
+    "Palau": { expectancy: 71.8, flag: "🇵🇼" },
+    "Panama": { expectancy: 77.33, flag: "🇵🇦" },
+    "Papua New Guinea": { expectancy: 66.15, flag: "🇵🇬" },
+    "Paraguay": { expectancy: 74.54, flag: "🇵🇾" },
+    "Peru": { expectancy: 77.1, flag: "🇵🇪" },
+    "Philippines": { expectancy: 71.68, flag: "🇵🇭" },
+    "Poland": { expectancy: 77.36, flag: "🇵🇱" },
+    "Portugal": { expectancy: 82.02, flag: "🇵🇹" },
+    "Qatar": { expectancy: 79.41, flag: "🇶🇦" },
+    "Romania": { expectancy: 75.6, flag: "🇷🇴" },
+    "Russia": { expectancy: 71.37, flag: "🇷🇺" },
+    "Rwanda": { expectancy: 67.4, flag: "🇷🇼" },
+    "Saint Kitts and Nevis": { expectancy: 77.65, flag: "🇰🇳" },
+    "Saint Lucia": { expectancy: 75.5, flag: "🇱🇨" },
+    "Saint Vincent and the Grenadines": { expectancy: 73.68, flag: "🇻🇨" },
+    "Samoa": { expectancy: 72.8, flag: "🇼🇸" },
+    "San Marino": { expectancy: 84.45, flag: "🇸🇲" },
+    "Sao Tome and Principe": { expectancy: 68.53, flag: "🇸🇹" },
+    "Saudi Arabia": { expectancy: 75.98, flag: "🇸🇦" },
+    "Senegal": { expectancy: 66.73, flag: "🇸🇳" },
+    "Serbia": { expectancy: 77.65, flag: "🇷🇸" },
+    "Seychelles": { expectancy: 74.87, flag: "🇸🇨" },
+    "Sierra Leone": { expectancy: 56.12, flag: "🇸🇱" },
+    "Singapore": { expectancy: 84.81, flag: "🇸🇬" },
+    "Slovakia": { expectancy: 77.4, flag: "🇸🇰" },
+    "Slovenia": { expectancy: 81.31, flag: "🇸🇮" },
+    "Solomon Islands": { expectancy: 68.1, flag: "🇸🇧" },
+    "Somalia": { expectancy: 57.12, flag: "🇸🇴" },
+    "South Africa": { expectancy: 64.13, flag: "🇿🇦" },
+    "South Sudan": { expectancy: 58.09, flag: "🇸🇸" },
+    "Spain": { expectancy: 83.55, flag: "🇪🇸" },
+    "Sri Lanka": { expectancy: 77.54, flag: "🇱🇰" },
+    "Sudan": { expectancy: 63.48, flag: "🇸🇩" },
+    "Suriname": { expectancy: 72.43, flag: "🇸🇷" },
+    "Sweden": { expectancy: 82.76, flag: "🇸🇪" },
+    "Switzerland": { expectancy: 83.82, flag: "🇨🇭" },
+    "Syria": { expectancy: 70.52, flag: "🇸🇾" },
+    "Taiwan": { expectancy: 81.27, flag: "🇹🇼" },
+    "Tajikistan": { expectancy: 72.26, flag: "🇹🇯" },
+    "Tanzania": { expectancy: 65.98, flag: "🇹🇿" },
+    "Thailand": { expectancy: 77.04, flag: "🇹🇭" },
+    "Timor-Leste": { expectancy: 68.63, flag: "🇹🇱" },
+    "Togo": { expectancy: 64.55, flag: "🇹🇬" },
+    "Tonga": { expectancy: 73.56, flag: "🇹🇴" },
+    "Trinidad and Tobago": { expectancy: 71.22, flag: "🇹🇹" },
+    "Tunisia": { expectancy: 76.17, flag: "🇹🇳" },
+    "Turkey": { expectancy: 76.98, flag: "🇹🇷" },
+    "Tuvalu": { expectancy: 66.58, flag: "🇹🇻" },
+    "Uganda": { expectancy: 63.58, flag: "🇺🇬" },
+    "Ukraine": { expectancy: 72.38, flag: "🇺🇦" },
+    "United Arab Emirates": { expectancy: 77.22, flag: "🇦🇪" },
+    "United Kingdom": { expectancy: 81.77, flag: "🇬🇧" },
+    "United States": { expectancy: 78.54, flag: "🇺🇸" },
+    "Uruguay": { expectancy: 77.38, flag: "🇺🇾" },
+    "Uzbekistan": { expectancy: 73.21, flag: "🇺🇿" },
+    "Vanuatu": { expectancy: 71.5, flag: "🇻🇺" },
+    "Venezuela": { expectancy: 74.1, flag: "🇻🇪" },
+    "Vietnam": { expectancy: 75.54, flag: "🇻🇳" },
+    "Yemen": { expectancy: 66.14, flag: "🇾🇪" },
+    "Zambia": { expectancy: 64.25, flag: "🇿🇲" },
+    "Zimbabwe": { expectancy: 61.52, flag: "🇿🇼" }
+};
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+        fetch('https://ipapi.co/json/')
+            .then(response => response.json())
+            .then(data => {
+                const country = data.country_name;
+                const countryInfo = lifeExpectancyData[country] || { flag: "", expectancy: 75 };
+                document.getElementById('countryDisplay').innerHTML = `Looks like you're from ${country}! ${countryInfo.flag}`;
+                populateCountrySelect(country);
+                setSliderDefault(countryInfo.expectancy);
+            });
+    });
+
+    function populateCountrySelect(selectedCountry) {
+        const countrySelect = document.getElementById('countrySelect');
+        for (const country in lifeExpectancyData) {
+            const option = document.createElement('option');
+            option.value = country;
+            option.text = `${country} ${lifeExpectancyData[country].flag}`;
+            countrySelect.appendChild(option);
+        }
+        if (selectedCountry && lifeExpectancyData[selectedCountry]) {
+            countrySelect.value = selectedCountry;
+        }
+
+        countrySelect.addEventListener('change', () => {
+            const country = countrySelect.value;
+            if (country && lifeExpectancyData[country]) {
+                setSliderDefault(lifeExpectancyData[country].expectancy);
+            }
+        });
+    }
+
+    function setSliderDefault(expectancy) {
+        const slider = document.getElementById('lifeExpectancySlider');
+        slider.value = expectancy;
+        updateLifeExpectancyValue();
+    }
+
+    function updateLifeExpectancyValue() {
+        const sliderValue = document.getElementById('lifeExpectancySlider').value;
+        document.getElementById('lifeExpectancyValue').innerHTML = `${sliderValue} years`;
+    }
+
+    function calculateLifeStats() {
+        const dobInput = document.getElementById('dob').value;
+        const country = document.getElementById('countrySelect').value;
+        const sliderValue = document.getElementById('lifeExpectancySlider').value;
+        const errorMessage = document.getElementById('errorMessage');
+        errorMessage.innerHTML = '';
+        errorMessage.style.display = 'none';
+
+        if (!dobInput) {
+            errorMessage.innerHTML = 'Please enter your date of birth!';
+            errorMessage.style.display = 'block';
+            return;
+        }
+
+        const dob = new Date(dobInput);
+        const today = new Date();
+        const ageInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+        const lifeExpectancy = parseFloat(sliderValue);
+        const totalLifeExpectancyDays = Math.floor(lifeExpectancy * 365.25);
+        const daysLeft = totalLifeExpectancyDays - ageInDays;
+
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+
+        if (daysLeft < 0) {
+            resultDiv.innerHTML = `
+                <strong>Oops! It seems you've already outlived your life expectancy.</strong><br>
+                You lived <strong>${Math.abs(daysLeft)}</strong> days longer than expected.<br>
+                That's pretty impressive!
+            `;
+        } else {
+            const weekendsLeft = Math.floor(daysLeft / 7) * 2;
+            const monthsLeft = Math.floor(daysLeft / 30);
+            const breathsLeft = daysLeft * 21600; // Approx. 15 breaths per minute
+
+            resultDiv.innerHTML = `
+                <strong>Here's your summary:</strong><br>
+                You've lived <strong>${ageInDays}</strong> days so far.<br>
+                You have around <strong>${daysLeft}</strong> days left.<br>
+                That's about <strong>${weekendsLeft}</strong> weekends.<br>
+                You'll experience roughly <strong>${monthsLeft}</strong> more months.<br>
+                And take approximately <strong>${breathsLeft.toLocaleString()}</strong> more breaths.
+            `;
+        }
+    }
+</script>
+
 </body>
 </html>
