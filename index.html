@@ -147,7 +147,7 @@
 <div class="container">
     <div id="countryDisplay">Let's figure it out together!</div>
     <h1>Curious about Your Life Journey?</h1>
-    <input type="date" id="dob" placeholder="When were you born?" required>
+    <input type="date" id="dob" placeholder="When were you born? 👶" required>
 
     <select id="countrySelect">
         <option value="">Select your country</option>
@@ -161,7 +161,7 @@
         <div id="lifeExpectancyValue">75 years</div>
     </div>
     
-    <button onclick="calculateLifeStats()">Show me the numbers!</button>
+    <button onclick="calculateLifeStats()">Show me the number⚡ !</button>
 
     <div id="errorMessage" class="error"></div>
     <div class="result" id="result"></div>
@@ -399,7 +399,7 @@ const lifeExpectancyData = {
             .then(data => {
                 const country = data.country_name;
                 const countryInfo = lifeExpectancyData[country] || { flag: "", expectancy: 75 };
-                document.getElementById('countryDisplay').innerHTML = `Looks like you're from ${country}! ${countryInfo.flag}`;
+                document.getElementById('countryDisplay').innerHTML = `Looks like you're from ${country}! ❤️ ${countryInfo.flag}`;
                 populateCountrySelect(country);
                 setSliderDefault(countryInfo.expectancy);
             });
@@ -472,12 +472,11 @@ const lifeExpectancyData = {
             const breathsLeft = daysLeft * 21600; // Approx. 15 breaths per minute
 
             resultDiv.innerHTML = `
-                <strong>Here's your summary:</strong><br>
-                You've lived <strong>${ageInDays}</strong> days so far.<br>
-                You have around <strong>${daysLeft}</strong> days left.<br>
-                That's about <strong>${weekendsLeft}</strong> weekends.<br>
-                You'll experience roughly <strong>${monthsLeft}</strong> more months.<br>
-                And take approximately <strong>${breathsLeft.toLocaleString()}</strong> more breaths.
+                You've lived <strong>${ageInDays}</strong> days on 🌎 so far.<br>
+                You have around <strong>${daysLeft}</strong> 🗓️ days left.<br>
+                That's about <strong>${weekendsLeft}</strong> weekends 🥳.<br>
+                You'll experience roughly <strong>${monthsLeft}</strong> more months ⏱️.<br>
+                And take approximately <strong>${breathsLeft.toLocaleString()}</strong> more breaths 🫁.
             `;
         }
     }
